@@ -1,12 +1,20 @@
 #!/usr/bin/ruby
 
 fileName = ARGV[0]
+className = String.new()
+methods = Hash.new()
+attributes = Hash.new()
 
-puts fileName
+data = File.readlines(fileName)
 
-File.open(fileName, "r") { |data|
+data.each do |lines|
+  if lines.match?(/@brief/) 
+    if lines.match?(/class/)
+      arry = lines.split
+      className = arry[-2]
+    end
+  end
 
-  puts data.readlines
+end
 
-}  
-
+puts className
