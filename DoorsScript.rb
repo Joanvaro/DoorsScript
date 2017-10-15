@@ -6,6 +6,21 @@ $methods = Hash.new()
 $attributes = Hash.new()
 
 $data = File.readlines($fileName)
+$publicLine = 0
+$protectedLine = 0
+$privateLine = 0
+
+def getAttributes(line)
+  iterator = $data.find_index(line) + 1
+  
+  for i in 0..50 do 
+    attributeName = $data[iterator + i].match(/[m,c]_*/)
+    $attributes[attributeName] = Array.new() unless $attributes.has_key?(attributeName)
+    $attributes[attributeName].push( $data[iterator + i].strip )
+
+    break if $data[iterator + i + 1].match(/end/)
+  end
+end
 
 def getSpecs(line, methodName) 
   iterator = $data.find_index(line) + 1
@@ -38,8 +53,7 @@ def getSpecs(line, methodName)
   
 end
 
-
-$data.each do |lines|
+def getPublicMethods(line)
   # It is looking for comments only
   if lines.match(/@brief/) 
     # It is looking for the class name
@@ -48,13 +62,30 @@ $data.each do |lines|
       $className = arry[-2]
 
     else
-
       func = lines.split
       $methods[func[-1]] = Hash.new()
       getSpecs(lines, func[-1])
     end
   end
+end
 
+line = 0
+$data.each do |lines|
+  if lines.match(/public/)
+    $publicLine = line
+    puts "public in line #{$publicLine}"
+    #getPublicMethods()
+  elsif lines.match(/protected/)
+    $protectedLine = line
+    puts "protected in line #{$protectedLine}"
+    #getProtectedMethods()
+  elsif lines.match(/private/)
+    $privateLine = line
+    puts"private in line #{$privateLine}"
+    #getPrivateData()
+  end
+
+  line += 1
 end
 
 puts $className
