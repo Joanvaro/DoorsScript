@@ -11,14 +11,12 @@ $protectedLine = 0
 $privateLine = 0
 
 def getAttributes(line)
-  iterator = $data.find_index(line) + 1
-  
   for i in 0..50 do 
-    attributeName = $data[iterator + i].match(/[m,c]_*/)
-    $attributes[attributeName] = Array.new() unless $attributes.has_key?(attributeName)
-    $attributes[attributeName].push( $data[iterator + i].strip )
+    attributeName = $data[line + i].match(/[m,c]_\w+/)
+    $attributes[attributeName.to_s] = Array.new() unless $attributes.has_key?(attributeName.to_s)
+    $attributes[attributeName.to_s].push( $data[line + i].strip )
 
-    break if $data[iterator + i + 1].match(/end/)
+    break if $data[line + i + 1].match(/end/)
   end
 end
 
@@ -53,18 +51,20 @@ def getSpecs(line, methodName)
   
 end
 
-def getPublicMethods(line)
+def getPublicMethods(numberLine)
+  
+  line = $data[numberLine] 
   # It is looking for comments only
-  if lines.match(/@brief/) 
+  if line.match(/@brief/) 
     # It is looking for the class name
-    if lines.match(/class/)
-      arry = lines.split
+    if line.match(/class/)
+      arry = line.split
       $className = arry[-2]
 
     else
-      func = lines.split
+      func = line.split
       $methods[func[-1]] = Hash.new()
-      getSpecs(lines, func[-1])
+      getSpecs(line, func[-1])
     end
   end
 end
@@ -73,20 +73,23 @@ line = 0
 $data.each do |lines|
   if lines.match(/public/)
     $publicLine = line
-    puts "public in line #{$publicLine}"
-    #getPublicMethods()
   elsif lines.match(/protected/)
     $protectedLine = line
-    puts "protected in line #{$protectedLine}"
-    #getProtectedMethods()
   elsif lines.match(/private/)
     $privateLine = line
-    puts"private in line #{$privateLine}"
-    #getPrivateData()
   end
 
   line += 1
 end
 
+#if ($publicLine < $protectedLine) 
+  ($publicLine..$privateLine).each do |public|
+    getPublicMethods(public)
+  end
+
+  getAttributes($privateLine)
+
 puts $className
 puts $methods
+puts
+puts $attributes 
